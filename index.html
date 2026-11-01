@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#172554">
+<title>12-Week Research Tracker</title>
+<style>
+:root{color-scheme:light;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--blue:#2563eb;--bg:#f5f7fb;--green:#15803d}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:var(--ink)}
+header{background:linear-gradient(120deg,#172554,#1d4ed8);color:white;padding:28px max(20px,calc((100% - 1100px)/2))}
+header h1{margin:0 0 6px;font-size:clamp(24px,4vw,34px)}header p{margin:0;color:#dbeafe}
+main{max-width:1100px;margin:24px auto;padding:0 18px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}
+.stat,.panel,.week{background:white;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 3px 12px #0f172a08}
+.stat strong{display:block;font-size:26px}.stat span{color:var(--muted);font-size:13px}
+.progress{height:9px;background:#e2e8f0;border-radius:20px;overflow:hidden;margin-top:10px}.bar{height:100%;width:0;background:linear-gradient(90deg,#2563eb,#22c55e);transition:width .2s}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin:18px 0}
+button,select{font:inherit;border:1px solid #cbd5e1;border-radius:10px;padding:9px 13px;background:white;color:var(--ink);cursor:pointer}
+button.primary{background:var(--blue);border-color:var(--blue);color:white}button.danger{color:#b91c1c}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.week h2{font-size:18px;margin:0 0 4px}.week .focus{color:var(--muted);font-size:13px;margin-bottom:12px}
+.weekhead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.pill{font-size:12px;background:#eff6ff;color:#1d4ed8;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.task{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid #f1f5f9}
+.task input{margin-top:5px;accent-color:var(--blue);width:16px;height:16px;flex-shrink:0}
+.task label{cursor:pointer}.task.done label{text-decoration:line-through;color:#94a3b8}
+footer{max-width:1100px;margin:24px auto;padding:0 18px 30px;color:var(--muted);font-size:13px}
+@media(max-width:700px){.stats{grid-template-columns:1fr}.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <h1>12-Week Research Tracker</h1>
+  <p>Machine Learning for Phishing URL Detection · Your research roadmap</p>
+</header>
+<main>
+  <section class="stats">
+    <div class="stat"><strong id="doneCount">0 / 48</strong><span>Tasks completed</span></div>
+    <div class="stat"><strong id="percent">0%</strong><span>Overall progress</span><div class="progress"><div class="bar" id="overallBar"></div></div></div>
+    <div class="stat"><strong id="weekCount">Week 1</strong><span>Current week (based on completed tasks)</span></div>
+  </section>
+  <div class="panel">
+    <strong>Research title</strong>
+    <p style="margin:5px 0 0">A Comparative Analysis of Machine Learning Algorithms for Phishing URL Detection</p>
+  </div>
+  <div class="toolbar">
+    <label for="filter">Show:</label>
+    <select id="filter"><option value="all">All weeks</option><option value="incomplete">Weeks with unfinished tasks</option><option value="complete">Completed weeks</option></select>
+    <button id="export">Export progress (JSON)</button>
+    <button id="import">Import progress</button>
+    <input type="file" id="fileInput" accept="application/json" hidden>
+    <button class="danger" id="reset">Reset all progress</button>
+  </div>
+  <section class="grid" id="weeks"></section>
+</main>
+<footer>Progress is saved automatically in this browser on this device. Use Export regularly to keep a backup. This tracker does not upload your data.</footer>
+<script>
+const roadmap = [
+["Week 1 — Research foundations","Understand the problem and scope",["Read introductory material on phishing and URL-based detection.","Write a one-page problem statement and motivation.","Define the main research question and 3–4 objectives.","Create a research folder and reference manager library."]],
+["Week 2 — Literature search","Find and organize prior work",["Search Google Scholar, IEEE Xplore, and Semantic Scholar for relevant papers.","Collect 8–12 relevant papers and record their methods.","Create a literature matrix: author, year, dataset, models, metrics, findings.","Draft the Related Work section outline."]],
+["Week 3 — Dataset selection","Choose and understand your data",["Download the UCI Phishing Websites dataset and read its documentation.","Inspect rows, columns, target labels, class balance, and missing values.","Record dataset limitations and provenance in your notes.","Finalize dataset choice and research questions."]],
+["Week 4 — Python environment","Prepare reproducible tools",["Create a Python virtual environment and install required libraries.","Set up notebooks and source-code folders.","Load the dataset and verify labels and feature types.","Save a clean initial dataset summary and README."]],
+["Week 5 — Data preparation","Build a reliable pipeline",["Check duplicates, missing values, and unexpected values.","Create a stratified train/test split with a fixed random seed.","Document preprocessing decisions and avoid test-set leakage.","Run a simple baseline and verify the pipeline works."]],
+["Week 6 — Baseline models","Train the first classifiers",["Train Logistic Regression and Decision Tree models.","Train Random Forest and SVM models.","Use consistent training and test data for every model.","Save model settings, code, and initial results."]],
+["Week 7 — Evaluation","Measure model performance",["Calculate accuracy, precision, recall, F1-score, and confusion matrices.","Treat phishing as the positive class and verify label mapping.","Measure training time and prediction time consistently.","Create a comparison table and explain initial findings."]],
+["Week 8 — Robustness and validation","Check that results are trustworthy",["Use cross-validation on the training data where appropriate.","Check for data leakage and overly optimistic evaluation.","Inspect false positives and false negatives.","Record limitations of the dataset and experimental design."]],
+["Week 9 — Feature analysis","Explore a focused contribution",["Rank feature importance using a suitable training-only method.","Select a reduced feature set, such as the top 10 features.","Retrain the strongest model using reduced features.","Compare performance and runtime with the full feature set."]],
+["Week 10 — Results and visuals","Prepare paper-ready evidence",["Create clear plots for model metrics and confusion matrices.","Finalize tables with consistent rounding and units.","Write the Results section using only observed results.","Explain trade-offs, surprising outcomes, and limitations."]],
+["Week 11 — Draft the paper","Write the full manuscript",["Draft Introduction and Related Work with citations.","Write Methodology so another researcher can reproduce it.","Write Results, Discussion, and Conclusion.","Write the abstract after the main paper is complete."]],
+["Week 12 — Revision and submission preparation","Polish and verify",["Check citations, references, figures, and formatting.","Verify all claims against sources and experiment outputs.","Run code from a clean environment and document instructions.","Ask a supervisor or peer for feedback and prepare the final version."]]
+];
+const KEY="phishingResearchTracker.v1";
+let state=load();
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{}}catch{return {}}}
+function save(){localStorage.setItem(KEY,JSON.stringify(state));render()}
+function taskKey(w,t){return `${w}-${t}`}
+function totalTasks(){return roadmap.reduce((n,w)=>n+w[2].length,0)}
+function completedTasks(){return Object.values(state).filter(Boolean).length}
+function render(){
+ const total=totalTasks(),done=completedTasks(),pct=Math.round(done/total*100);
+ document.getElementById("doneCount").textContent=`${done} / ${total}`;
+ document.getElementById("percent").textContent=pct+"%";
+ document.getElementById("overallBar").style.width=pct+"%";
+ let current=roadmap.findIndex((w,i)=>w[2].some((_,t)=>!state[taskKey(i,t)]));
+ document.getElementById("weekCount").textContent=current<0?"All complete":`Week ${current+1}`;
+ const filter=document.getElementById("filter").value;
+ document.getElementById("weeks").innerHTML="";
+ roadmap.forEach((week,i)=>{
+  const tasks=week[2],doneWeek=tasks.filter((_,t)=>state[taskKey(i,t)]).length;
+  if(filter==="incomplete"&&doneWeek===tasks.length)return;
+  if(filter==="complete"&&doneWeek!==tasks.length)return;
+  const card=document.createElement("article");card.className="week";
+  const head=document.createElement("div");head.className="weekhead";
+  const title=document.createElement("h2");title.textContent=week[0];
+  const pill=document.createElement("span");pill.className="pill";pill.textContent=`${doneWeek}/${tasks.length}`;
+  head.append(title,pill);card.append(head);
+  const focus=document.createElement("div");focus.className="focus";focus.textContent=week[1];card.append(focus);
+  tasks.forEach((task,t)=>{
+   const row=document.createElement("div");row.className="task"+(state[taskKey(i,t)]?" done":"");
+   const cb=document.createElement("input");cb.type="checkbox";cb.id=taskKey(i,t);cb.checked=!!state[taskKey(i,t)];
+   cb.addEventListener("change",()=>{state[taskKey(i,t)]=cb.checked;save()});
+   const label=document.createElement("label");label.htmlFor=cb.id;label.textContent=task;
+   row.append(cb,label);card.append(row);
+  });
+  document.getElementById("weeks").append(card);
+ });
+}
+document.getElementById("filter").addEventListener("change",render);
+document.getElementById("export").addEventListener("click",()=>{
+ const blob=new Blob([JSON.stringify({title:"Phishing Research Tracker",exportedAt:new Date().toISOString(),progress:state},null,2)],{type:"application/json"});
+ const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="phishing-research-progress.json";a.click();URL.revokeObjectURL(a.href);
+});
+document.getElementById("import").addEventListener("click",()=>document.getElementById("fileInput").click());
+document.getElementById("fileInput").addEventListener("change",async e=>{
+ const file=e.target.files[0];if(!file)return;
+ try{const data=JSON.parse(await file.text());state=data.progress||data;save();alert("Progress imported.");}catch{alert("Could not read this progress file.");}
+ e.target.value="";
+});
+document.getElementById("reset").addEventListener("click",()=>{
+ if(confirm("Reset all 12-week progress? This cannot be undone unless you exported a backup.")){state={};save()}
+});
+render();
+</script>
+</body>
+</html>
